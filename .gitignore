@@ -24,4 +24,4 @@ bin/
 *.sc
 
 # jupyter notebooks
-ipynb_checkpoints/
+.ipynb_checkpoints/
