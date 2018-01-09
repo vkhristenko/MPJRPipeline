@@ -25,3 +25,5 @@ bin/
 
 # jupyter notebooks
 .ipynb_checkpoints/
+
+.DS_Store
