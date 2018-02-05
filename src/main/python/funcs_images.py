@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 from scipy import misc
 import six
+import time
 
 from pyspark.sql import Row
 from pyspark.ml.linalg import Vectors, Matrices

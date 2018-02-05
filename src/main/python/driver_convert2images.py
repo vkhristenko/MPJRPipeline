@@ -12,7 +12,7 @@ if __name__ == "__main__":
             .getOrCreate()
 
     # config logging
-    logging.basicConfig(level = logging.INFO)
+    logging.basicConfig(level = logging.INFO, format="[PYDRIVER] %(message)s")
 
     # must have 4 args
     if len(sys.argv) != 5:
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     # pipeline itself
     images = features\
             .rdd\
-            .map(funcs.convert2images)\
+            .map(funcs.convert2image)\
             .toDF()
 
     logging.info("Built the pipeline and converted back into the data frame")
