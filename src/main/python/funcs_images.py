@@ -8,6 +8,7 @@ import six
 
 import numpy as np
 import time, os
+import matplotlib
 from pyspark.sql import Row
 from scipy import misc
 from skimage import draw
