@@ -3,7 +3,10 @@ from skimage import draw
 import matplotlib.pyplot as plt
 import matplotlib
 from scipy import misc
+import sys
 import six
+sys.path.insert(0, "/afs/cern.ch/user/v/vkhriste/.local/lib/python2.7/site-packages")
+reload(six)
 import time
 
 from pyspark.sql import Row
