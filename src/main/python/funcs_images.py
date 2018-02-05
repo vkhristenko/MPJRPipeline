@@ -3,7 +3,8 @@
 # TODO: Figure out the way to do this on analytix!
 #
 import sys
-sys.path.insert(0, "/afs/cern.ch/user/v/vkhriste/.local/lib/python2.7/site-packages")
+#sys.path.insert(0, "/afs/cern.ch/user/v/vkhriste/.local/lib/python2.7/site-packages")
+sys.path.insert(0, "/afs/cern.ch/user/p/pkothuri/.local/lib/python2.7/site-packages")
 import six
 
 import numpy as np
