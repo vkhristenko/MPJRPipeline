@@ -11,12 +11,21 @@
 #
 # TODO: These imports need to be properly rearranged in the future!
 #
+
+import sys
+sys.path.insert(0, "/afs/cern.ch/user/v/vkhriste/.local/lib/python2.7/site-packages")
+import six
+print six.__version__
+reload(six)
+print six.__version__
+
 import numpy as np
-from skimage import draw
 import matplotlib.pyplot as plt
 import matplotlib
+import time, os
+from pyspark.sql import Row
 from scipy import misc
-import time
+from skimage import draw
 
 from pyspark.sql import Row
 from pyspark.ml.linalg import Vectors, Matrices
