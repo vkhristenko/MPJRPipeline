@@ -4,7 +4,9 @@
 import sys
 sys.path.insert(0, "/afs/cern.ch/user/v/vkhriste/.local/lib/python2.7/site-packages")
 import six
+print six.__version__
 reload(six)
+print six.__version__
 
 #
 # TODO: These imports need to be properly rearranged in the future!
