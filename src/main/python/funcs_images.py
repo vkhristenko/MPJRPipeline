@@ -149,4 +149,4 @@ def convert2image(row):
     print "Time to process a Row: %3.3f" % (end - start)
     print "Time to run tolist: %3.3f" % (end - before_tolist)
 
-    return Row(image=l)
+    return Row(image=l, label=row.label)
