@@ -1,9 +1,9 @@
 from keras.models import Model
 from keras.layers.core import Dense, Dropout, Activation
-from keras.layers.convolutional import Convolution2D
+from keras.layers.convolutional import Conv2D,Convolution2D
 from keras.layers.pooling import AveragePooling2D
 from keras.layers.pooling import GlobalAveragePooling2D
-from keras.layers import Input, merge
+from keras.layers import Input, concatenate
 from keras.layers.normalization import BatchNormalization
 from keras.regularizers import l2
 from keras.layers import Permute
@@ -21,16 +21,16 @@ def conv_factory(x, nb_filter, dropout_rate=None, weight_decay=1E-4):
     :rtype: keras network
     """
 
-    x = BatchNormalization(mode=0,
-                           axis=1,
+    x = BatchNormalization(axis=1,
                            gamma_regularizer=l2(weight_decay),
                            beta_regularizer=l2(weight_decay))(x)
     x = Activation('elu')(x)
-    x = Convolution2D(nb_filter, 3, 3,
-                      init="he_uniform",
-                      border_mode="same",
-                      bias=False,
-                      W_regularizer=l2(weight_decay))(x)
+    x = Convolution2D(nb_filter, (3, 3),
+            data_format="channels_first",
+                      kernel_initializer="he_uniform",
+                      padding="same",
+                      use_bias=False,
+                      kernel_regularizer=l2(weight_decay))(x)
     if dropout_rate:
         x = Dropout(dropout_rate)(x)
 
@@ -50,19 +50,19 @@ def transition(x, nb_filter, dropout_rate=None, weight_decay=1E-4):
 
     """
 
-    x = BatchNormalization(mode=0,
-                           axis=1,
+    x = BatchNormalization(axis=1,
                            gamma_regularizer=l2(weight_decay),
                            beta_regularizer=l2(weight_decay))(x)
     x = Activation('elu')(x)
-    x = Convolution2D(nb_filter, 1, 1,
-                      init="he_uniform",
-                      border_mode="same",
-                      bias=False,
-                      W_regularizer=l2(weight_decay))(x)
+    x = Conv2D(nb_filter, (1, 1),
+                      kernel_initializer="he_uniform",
+                      padding="same",
+                      use_bias=False,
+                      data_format="channels_first",
+                      kernel_regularizer=l2(weight_decay))(x)
     if dropout_rate:
         x = Dropout(dropout_rate)(x)
-    x = AveragePooling2D((2, 2), strides=(2, 2))(x)
+    x = AveragePooling2D((2, 2), strides=(2, 2), data_format="channels_first")(x)
 
     return x
 
@@ -86,15 +86,16 @@ def denseblock(x, nb_layers, nb_filter, growth_rate,
 
     list_feat = [x]
 
+    print K.image_dim_ordering()
     if K.image_dim_ordering() == "th":
-        concat_axis = 1
+        concat_axis = 3
     elif K.image_dim_ordering() == "tf":
-        concat_axis = -1
+        concat_axis = 1
 
     for i in range(nb_layers):
         x = conv_factory(x, growth_rate, dropout_rate, weight_decay)
         list_feat.append(x)
-        x = merge(list_feat, mode='concat', concat_axis=concat_axis)
+        x = concatenate(list_feat, axis=concat_axis)
         nb_filter += growth_rate
 
     return x, nb_filter
@@ -119,14 +120,15 @@ def denseblock_altern(x, nb_layers, nb_filter, growth_rate,
     above is that the one above
     """
 
+    print K.image_dim_ordering()
     if K.image_dim_ordering() == "th":
-        concat_axis = 1
+        concat_axis = 3
     elif K.image_dim_ordering() == "tf":
-        concat_axis = -1
+        concat_axis = 1
 
     for i in range(nb_layers):
         merge_tensor = conv_factory(x, growth_rate, dropout_rate, weight_decay)
-        x = merge([merge_tensor, x], mode='concat', concat_axis=concat_axis)
+        x = concatenate([merge_tensor, x], axis=concat_axis)
         nb_filter += growth_rate
 
     return x, nb_filter
@@ -159,12 +161,13 @@ def DenseNet(nb_classes, img_dim, depth, nb_dense_block, growth_rate,
     nb_layers = int((depth - 4) / 3)
 
     # Initial convolution
-    x = Convolution2D(nb_filter, 3, 3,
-                      init="he_uniform",
-                      border_mode="same",
+    x = Conv2D(nb_filter, (3, 3),
+               data_format="channels_first",
+                      kernel_initializer="he_uniform",
+                      padding="same",
                       name="initial_conv2D",
-                      bias=False,
-                      W_regularizer=l2(weight_decay))(model_input)
+                      use_bias=False,
+                      kernel_regularizer=l2(weight_decay))(model_input)
 
     # Add dense blocks
     for block_idx in range(nb_dense_block - 1):
@@ -180,17 +183,16 @@ def DenseNet(nb_classes, img_dim, depth, nb_dense_block, growth_rate,
                               dropout_rate=dropout_rate,
                               weight_decay=weight_decay)
 
-    x = BatchNormalization(mode=0,
-                           axis=1,
+    x = BatchNormalization(axis=1,
                            gamma_regularizer=l2(weight_decay),
                            beta_regularizer=l2(weight_decay))(x)
     x = Activation('elu')(x)
-    x = GlobalAveragePooling2D(dim_ordering="tf")(x)
+    x = GlobalAveragePooling2D(data_format="channels_last")(x)
 
     x = Dense(nb_classes,
               activation='softmax',
-              W_regularizer=l2(weight_decay),
-              b_regularizer=l2(weight_decay))(x)
-    densenet = Model(input=[model_input], output=[x], name="DenseNet")
+              kernel_regularizer=l2(weight_decay),
+              bias_regularizer=l2(weight_decay))(x)
+    densenet = Model(inputs=[model_input], outputs=[x], name="DenseNet")
 
     return densenet
